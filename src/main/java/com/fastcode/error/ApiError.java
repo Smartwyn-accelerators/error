@@ -1,7 +1,7 @@
 package com.fastcode.error;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.hibernate.validator.internal.engine.path.PathImpl;
+import jakarta.validation.Path;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
@@ -129,9 +129,20 @@ public class ApiError {
     private void addValidationError(ConstraintViolation<?> cv) {
         this.addValidationError(
                 cv.getRootBeanClass().getSimpleName(),
-                ((PathImpl) cv.getPropertyPath()).getLeafNode().asString(),
+                getPropertyPath(cv.getPropertyPath()),
                 cv.getInvalidValue(),
                 cv.getMessage());
+    }
+    
+    private String getPropertyPath(Path path) {
+        StringBuilder pathBuilder = new StringBuilder();
+        path.forEach(node -> {
+            if (pathBuilder.length() > 0) {
+                pathBuilder.append(".");
+            }
+            pathBuilder.append(node.getName());
+        });
+        return pathBuilder.toString();
     }
 
     void addValidationErrors(Set<ConstraintViolation<?>> constraintViolations) {
